@@ -41,6 +41,10 @@ class Sym:
     V: np.ndarray
     VWAP: np.ndarray         # cumulative session VWAP at the close of each bar
     feat: pd.DataFrame       # daily features indexed by date (known before/at the open)
+    F: dict | None = None    # same features as numpy arrays (fast access in loops)
+
+    def __post_init__(self):
+        self.F = {c: self.feat[c].to_numpy(dtype=float) for c in self.feat.columns}
 
 
 def _daily_features(daily: pd.DataFrame, first_bar_vol: pd.Series, first_open: pd.Series) -> pd.DataFrame:
