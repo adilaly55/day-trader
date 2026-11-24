@@ -30,6 +30,7 @@ from universe import ETFS
 DATA = Path(__file__).resolve().parent.parent / "data" / "daily_long"
 COST_BPS = 5.0
 SLOTS = 5
+EXIT_NEXT_OPEN = False      # True: exit signals seen at the close are executed at the next open (no close peeking)
 IS_END = pd.Timestamp("2021-12-31")
 
 
@@ -94,6 +95,8 @@ def walk(s: D, i: int, max_hold: int, stop: float | None, exit_fn, next_open: bo
                 path.append((j, stop)); return _done(s, i, e_idx, entry, path, "stop")
         path.append((j, s.C[j]))
         if exit_fn(s, j, entry):
+            if EXIT_NEXT_OPEN and j + 1 < n:
+                path.append((j + 1, s.O[j + 1]))
             return _done(s, i, e_idx, entry, path, "exit")
     if not path:
         return None
