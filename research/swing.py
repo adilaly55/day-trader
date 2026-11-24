@@ -44,6 +44,7 @@ class D:
     C: np.ndarray
     V: np.ndarray
     ind: dict
+    X: np.ndarray | None = None   # execution prices (defaults to C)
 
 
 def _rsi(c: pd.Series, n: int) -> pd.Series:
@@ -83,7 +84,8 @@ def walk(s: D, i: int, max_hold: int, stop: float | None, exit_fn, next_open: bo
             return None
         e_idx, entry = i + 1, s.O[i + 1]
     else:
-        e_idx, entry = i, s.C[i]
+        e_idx, entry = i, (s.X if s.X is not None else s.C)[i]
+    P = s.X if s.X is not None else s.C
     path = []                                  # (date_index, price at that day's close or exit)
     j = e_idx
     first = e_idx + (0 if next_open else 1)
@@ -93,7 +95,7 @@ def walk(s: D, i: int, max_hold: int, stop: float | None, exit_fn, next_open: bo
                 path.append((j, s.O[j])); return _done(s, i, e_idx, entry, path, "stop")
             if s.L[j] <= stop:
                 path.append((j, stop)); return _done(s, i, e_idx, entry, path, "stop")
-        path.append((j, s.C[j]))
+        path.append((j, P[j]))
         if exit_fn(s, j, entry):
             if EXIT_NEXT_OPEN and j + 1 < n:
                 path.append((j + 1, s.O[j + 1]))

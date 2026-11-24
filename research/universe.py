@@ -24,3 +24,16 @@ STOCKS = [
 ]
 
 ALL = ETFS + STOCKS
+
+# S&P 100 members as of early 2016 (point-in-time, so later losers are included).
+# Omitted: names acquired/delisted since (AGN, CELG, MON, TWX, old DOW/DD, FOX) and
+# messy ticker histories (RTN/UTX -> RTX). Ticker renames mapped: FB->META, PCLN->BKNG.
+SP100_2016 = [
+    "AAPL", "ABBV", "ABT", "ACN", "AIG", "ALL", "AMGN", "AMZN", "AXP", "BA", "BAC", "BIIB", "BK", "BLK",
+    "BMY", "BRK.B", "C", "CAT", "CL", "CMCSA", "COF", "COP", "COST", "CSCO", "CVS", "CVX", "DHR", "DIS",
+    "DUK", "EMR", "EXC", "F", "META", "FDX", "GD", "GE", "GILD", "GM", "GOOGL", "GS", "HAL", "HD", "HON",
+    "IBM", "INTC", "JNJ", "JPM", "KHC", "KMI", "KO", "LLY", "LMT", "LOW", "MA", "MCD", "MDLZ", "MDT", "MET",
+    "MMM", "MO", "MRK", "MS", "MSFT", "NEE", "NKE", "ORCL", "OXY", "BKNG", "PEP", "PFE", "PG", "PM", "PYPL",
+    "QCOM", "SBUX", "SLB", "SO", "SPG", "T", "TGT", "TXN", "UNH", "UNP", "UPS", "USB", "V", "VZ", "WBA",
+    "WFC", "WMT", "XOM",
+]

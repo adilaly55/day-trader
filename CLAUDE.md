@@ -29,8 +29,15 @@ Automated short-term trading bot for the owner's **Trading 212 Invest** account 
   only "ORB on stocks in play" (5-min opening range, RVOL>=4, stop 0.2 ATR, SPY>SMA20 filter) survived: +0.04%/trade OOS,
   weak and year-dependent (lost 2024, 2025). Breakeven cost ~7 bps/side. Others failed. Random entries -0.11%/trade.
 - ML (gradient boosting, 13 features at 09:35, walk-forward): no predictive power (corr 0.01).
-- Conclusion: costs dominate short holds. Next: multi-day (swing) strategies on daily data 2016-2026, and
-  ORB held to the US close using 5-min full-day data.
+- Conclusion: costs dominate short holds.
+- Swing (daily, 2016-2026, research/RESULTS_SWING.md): dip-buying in uptrends works; today's-winners stock list
+  is survivorship-biased (ignore those numbers). Owner's T212 account offers only UCITS ETFs (London-listed:
+  SPY4, EQQQ, XLKS...), not US ETFs. ETF dip-buying at the LONDON close: edge gone (Test A) -> rejected.
+- **Lead candidate (Test C, realistic timing):** RSI(2) pullback on US large caps (2016 S&P 100 list, survivorship-
+  reduced): close(15:45 ET) > SMA200 and RSI2 < 20 -> buy next day at the 09:30 open; sell at 15:55 ET on the
+  first day the 15:45 price > SMA5, max 5 days. 2022-26 OOS: +0.40%/trade (5 bps) / +0.30% (10 bps), 70% wins,
+  maxDD ~17-19%; random-entry baseline ~0. Entering same day at 15:55 instead of next open kills the edge.
+  Bot schedule (Dubai, winter): buy at 18:30, check/sell at 00:45-00:55.
 
 ## Plan
 1. Research (multi-day + hold-to-close) -> pick a strategy.
