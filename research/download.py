@@ -26,6 +26,7 @@ from universe import ALL
 DATA = Path(__file__).resolve().parent.parent / "data"
 URL = "https://data.alpaca.markets/v2/stocks/bars"
 START, END = "2020-06-01", "2026-11-22"
+MODE = "window"            # "window" = 09:30-12:30 bars, "full" = 09:30-16:00 bars, "daily" = daily since 2016
 MIN_INTERVAL = 60 / 180          # stay under the free plan's 200 requests/minute
 _last = 0.0
 _lock = threading.Lock()
@@ -54,9 +55,9 @@ def get(params: dict) -> dict:
             raise
 
 
-def bars(symbol: str, timeframe: str) -> pd.DataFrame:
-    params = {"symbols": symbol, "timeframe": timeframe, "start": START, "end": END, "limit": 10000,
-              "adjustment": "split", "feed": "sip", "sort": "asc"}
+def bars(symbol: str, timeframe: str, start: str = START, adjustment: str = "split") -> pd.DataFrame:
+    params = {"symbols": symbol, "timeframe": timeframe, "start": start, "end": END, "limit": 10000,
+              "adjustment": adjustment, "feed": "sip", "sort": "asc"}
     rows = []
     while True:
         resp = get(params)
@@ -87,7 +88,18 @@ def one(i: int, sym: str, n: int) -> None:
 
 
 def _one(i: int, sym: str, n: int) -> None:
-        out5 = DATA / "5min" / f"{sym}.parquet"
+        if MODE == "daily":
+            out = DATA / "daily_long" / f"{sym}.parquet"
+            if out.exists():
+                return
+            out.parent.mkdir(parents=True, exist_ok=True)
+            d = bars(sym, "1Day", start="2016-01-01", adjustment="all")   # dividends too: no fake ex-date gaps
+            d["date"] = d["ts"].dt.tz_localize(None).dt.normalize()
+            d.drop(columns="ts").to_parquet(out, index=False)
+            print(f"[{i}/{n}] {sym}: {len(d)} daily bars from {d['date'].iloc[0]:%Y-%m-%d}", flush=True)
+            return
+        folder = "5min_full" if MODE == "full" else "5min"
+        out5 = DATA / folder / f"{sym}.parquet"
         if out5.exists():
             return
         t0 = time.time()
@@ -99,14 +111,19 @@ def _one(i: int, sym: str, n: int) -> None:
         tod = intraday["ts"].dt.hour * 60 + intraday["ts"].dt.minute
         date = intraday["ts"].dt.date
         pre = intraday[(tod >= 240) & (tod < 570)].groupby(date[(tod >= 240) & (tod < 570)])["volume"].sum()
-        session = intraday[(tod >= 570) & (tod < 750)].copy()                 # 09:30 - 12:30 bar starts
+        session = intraday[(tod >= 570) & (tod < (960 if MODE == "full" else 750))].copy()   # bar starts
         daily["date"] = daily["ts"].dt.date
         daily["premarket_volume"] = daily["date"].map(pre).fillna(0)
-        daily.drop(columns="ts").to_parquet(DATA / "daily" / f"{sym}.parquet", index=False)
+        if MODE == "window":
+            daily.drop(columns="ts").to_parquet(DATA / "daily" / f"{sym}.parquet", index=False)
+        out5.parent.mkdir(parents=True, exist_ok=True)
         session.to_parquet(out5, index=False)
         print(f"[{i}/{n}] {sym}: {len(daily)} days, {len(session)} 5-min bars, "
               f"from {session['ts'].iloc[0]:%Y-%m-%d} ({time.time()-t0:.0f}s)", flush=True)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] or ALL)
+    args = sys.argv[1:]
+    if args and args[0] in ("--full", "--daily"):
+        MODE = args.pop(0)[2:]
+    main(args or ALL)
