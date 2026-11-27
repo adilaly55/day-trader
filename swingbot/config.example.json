@@ -1,0 +1,8 @@
+{
+  "broker": "dryrun",
+  "t212_env": "demo",
+  "position_usd": 50,
+  "max_positions": 5,
+  "notify_termux": true,
+  "ntfy_topic": ""
+}
