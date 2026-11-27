@@ -7,7 +7,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-DEFAULT = {"positions": {}, "pending": None, "done": {}, "paused": False, "tickers": {}, "tickers_date": None}
+DEFAULT = {"positions": {}, "pending": None, "done": {}, "paused": False, "tickers": {}, "tickers_date": None, "session": None}
 
 
 class State:

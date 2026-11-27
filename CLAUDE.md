@@ -19,7 +19,12 @@ Automated short-term trading bot for the owner's **Trading 212 Invest** account 
   Never ask the owner to paste keys into chat, never commit keys.
 
 ## Repository layout
-- `intraday/` - live engine (strategy, risk, tracker/journal, paper + Alpaca brokers, CLI). Trading 212 broker: TODO.
+- `swingbot/` - **the live bot** (stdlib only, runs in Termux): strategy.py (rules), jobs.py (daily routine via `tick`),
+  broker.py (Trading212 + DryRun), marketdata.py (Alpaca), earnings.py (Finnhub), state.py (state.json + journal.sqlite
+  in ~/.swingbot), tests/ (incl. a check that signals match research/swing.py). Phone guide: PHONE_SETUP.md,
+  scripts/termux_setup.sh (cron every 5 min 16:00-01:59 Dubai). Trading 212 connection NOT yet verified against the
+  real demo API (owner hasn't provided a key to this environment).
+- `intraday/` - first prototype (intraday ORB engine, Alpaca broker). Superseded by swingbot.
 - `research/` - `download.py` (Alpaca -> data/), `lab.py` + `strategies.py` (intraday 5-min backtests),
   `run_research.py`, `deep_dive.py`, `swing.py` (multi-day). Results in `research/RESULTS*.md`.
 - `data/` - downloaded bars (gitignored; re-create with `python research/download.py [--full|--daily]`).

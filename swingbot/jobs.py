@@ -28,13 +28,22 @@ class Bot:
 
     # ------------------------------------------------------------------ scheduling
     def session(self, day: date):
+        """Today's (open, close); cached once per day because the broker's schedule download is large."""
+        cache = self.state.data.get("session") or {}
+        if cache.get("date") == day.isoformat():
+            if cache.get("closed"):
+                return None
+            return datetime.fromisoformat(cache["open"]), datetime.fromisoformat(cache["close"])
+        s = None
         try:
             s = self.broker.us_session(day.isoformat())
-            if s:
-                return s
         except Exception as e:                              # fall back to the built-in calendar
             self.state.log("warn", f"exchange schedule unavailable: {e}")
-        return calendar_us.session(day)
+        s = s or calendar_us.session(day)
+        self.state.data["session"] = ({"date": day.isoformat(), "closed": True} if not s else
+                                      {"date": day.isoformat(), "open": s[0].isoformat(), "close": s[1].isoformat()})
+        self.state.save()
+        return s
 
     def tick(self) -> str:
         now = self.now_fn()
