@@ -129,13 +129,17 @@ class Trading212:
     def us_ticker_map(self, symbols: list[str]) -> dict[str, str]:
         """Map plain symbols (AAPL, BRK.B) to Trading 212 tickers for USD-traded US stocks."""
         want = {s.upper(): s for s in symbols}
+        by_ticker = {s.upper().replace(".", "_") + "_US_EQ": s for s in symbols}
         out: dict[str, str] = {}
         for ins in self.instruments():
             if ins.get("type") != "STOCK" or ins.get("currencyCode") != "USD":
                 continue
+            if ins["ticker"] in by_ticker:                       # e.g. BK_US_EQ, now shown as "BNY"
+                out[by_ticker[ins["ticker"]]] = ins["ticker"]
+                continue
             short = (ins.get("shortName") or "").upper()
             for cand in (short, short.replace("_", "."), short.replace("/", ".")):
-                if cand in want and (want[cand] not in out or ins["ticker"].endswith("_US_EQ")):
+                if cand in want and want[cand] not in out:
                     out[want[cand]] = ins["ticker"]
         return out
 

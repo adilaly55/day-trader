@@ -141,6 +141,16 @@ class TestBotFlow(unittest.TestCase):
         self.assertNotIn("AAA", self.bot.state.positions)
         self.assertIn("stop", self.bot.state.trades()[0][8])
 
+    def test_never_touches_owners_own_holdings(self):
+        # the owner already holds AAA in the account (bought by hand): the bot must not buy or sell it
+        self.bot.broker.data["holdings"]["AAA_US_EQ"] = {"quantity": 3, "avg_price": 100, "current_price": 144}
+        self.bot.sell_job(date(2026, 12, 1))
+        self.assertEqual(self.bot.state.data["pending"]["symbols"], [])
+        self.bot.state.data["pending"] = {"made": "2026-12-01", "symbols": ["AAA"]}
+        self.bot.buy_job(date(2026, 12, 2))
+        self.assertEqual(self.bot.state.positions, {})
+        self.assertEqual(self.bot.broker.data["holdings"]["AAA_US_EQ"]["quantity"], 3)
+
     def test_stale_or_same_day_queue_is_not_bought(self):
         self.bot.state.data["pending"] = {"made": "2026-11-20", "symbols": ["AAA"]}
         self.bot.buy_job(date(2026, 12, 2))

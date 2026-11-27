@@ -25,6 +25,7 @@ class Bot:
         self.cfg, self.broker, self.market, self.earnings = cfg, broker, market, earnings
         self.state, self.notify = state, notify
         self.now_fn = now_fn or (lambda: datetime.now(timezone.utc))
+        self.outside: set[str] = set()      # tickers held in the account but not opened by the bot
 
     # ------------------------------------------------------------------ scheduling
     def session(self, day: date):
@@ -107,6 +108,8 @@ class Bot:
         if hasattr(self.broker, "check_stops"):              # dry-run simulates the broker-side stops
             self.broker.check_stops(prices)
         holdings = self.broker.holdings()
+        bot_tickers = {p["ticker"] for p in self.state.positions.values()}
+        self.outside = {t for t in holdings if t not in bot_tickers}   # the owner's own holdings: never touched
         for sym, pos in list(self.state.positions.items()):
             h = holdings.get(pos["ticker"])
             if h is None or h.quantity < pos["quantity"] * 0.5:
@@ -147,7 +150,8 @@ class Bot:
         if free > 0 and not self.state.data["paused"]:
             cands = []
             for sym in cfg.universe:
-                if sym in self.state.positions or sym not in tickers or sym not in prices:
+                if sym in self.state.positions or sym not in tickers or sym not in prices \
+                        or tickers[sym] in self.outside:
                     continue
                 c = strategy.entry_signal(cfg, sym, history.get(sym, []), prices[sym])
                 if c:
@@ -195,7 +199,8 @@ class Bot:
         for sym in pending["symbols"]:
             if len(self.state.positions) >= cfg.max_positions:
                 break
-            if sym in self.state.positions or sym not in tickers or sym not in prices:
+            if sym in self.state.positions or sym not in tickers or sym not in prices \
+                    or tickers[sym] in self.outside:
                 continue
             try:
                 if self.broker.cash_available() < cfg.position_usd * 1.02:

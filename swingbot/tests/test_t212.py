@@ -18,6 +18,7 @@ class FakeHttp:
         if path == "/equity/metadata/instruments":
             return [{"ticker": "AAPL_US_EQ", "shortName": "AAPL", "type": "STOCK", "currencyCode": "USD", "workingScheduleId": 7},
                     {"ticker": "BRK_B_US_EQ", "shortName": "BRK.B", "type": "STOCK", "currencyCode": "USD", "workingScheduleId": 7},
+                    {"ticker": "BK_US_EQ", "shortName": "BNY", "type": "STOCK", "currencyCode": "USD", "workingScheduleId": 7},
                     {"ticker": "AAPLl_EQ", "shortName": "AAPL", "type": "STOCK", "currencyCode": "GBX", "workingScheduleId": 9},
                     {"ticker": "SPY4l_EQ", "shortName": "SPY4", "type": "ETF", "currencyCode": "USD", "workingScheduleId": 9}]
         if path == "/equity/metadata/exchanges":
@@ -52,8 +53,8 @@ class TestT212(unittest.TestCase):
         self.b.http = FakeHttp()
 
     def test_ticker_map_prefers_usd_us_listing(self):
-        m = self.b.us_ticker_map(["AAPL", "BRK.B", "MSFT"])
-        self.assertEqual(m, {"AAPL": "AAPL_US_EQ", "BRK.B": "BRK_B_US_EQ"})
+        m = self.b.us_ticker_map(["AAPL", "BRK.B", "MSFT", "BK"])
+        self.assertEqual(m, {"AAPL": "AAPL_US_EQ", "BRK.B": "BRK_B_US_EQ", "BK": "BK_US_EQ"})
 
     def test_session_from_schedule(self):
         o, c = self.b.us_session("2026-12-01")
