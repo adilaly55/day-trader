@@ -24,8 +24,9 @@ Automated short-term trading bot for the owner's **Trading 212 Invest** account 
   in ~/.swingbot), tests/ (incl. a check that signals match research/swing.py). Phone guide: PHONE_SETUP.md,
   scripts/termux_setup.sh (cron every 5 min 16:00-01:59 Dubai). Trading 212 demo key saved in the cloud environment
   (proxy-injected for demo.trading212.com). Read-only checks verified (account 20700851, USD, 90/90 stocks mapped).
-  Order placement NOT yet tested live. **Owner's rule: place NO orders (not even demo test orders) until the owner
-  explicitly commands it.** The demo account also holds the owner's own positions (AAPL, V, TSLA, PBR, VLO, VUSA);
+  Live order test on the demo account PASSED 2026-11-27 (scripts/t212_order_test.py, MSFT: buy 0.101 @ 494.46 with
+  +0.006% slippage, 12% GTC stop placed/listed/cancelled, sold @ 494.57, account left clean; 3-decimal quantities OK).
+  **Owner's rule: place NO orders and do not start the bot until the owner explicitly commands it.** The demo account also holds the owner's own positions (AAPL, V, TSLA, PBR, VLO, VUSA);
   the bot skips any stock already held outside the bot and never touches those.
 - `intraday/` - first prototype (intraday ORB engine, Alpaca broker). Superseded by swingbot.
 - `research/` - `download.py` (Alpaca -> data/), `lab.py` + `strategies.py` (intraday 5-min backtests),
