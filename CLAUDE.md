@@ -8,7 +8,7 @@ Automated short-term trading bot for the owner's **Trading 212 Invest** account 
 - Prefers same-day trades; holding **1-3 days** is acceptable.
 - Session window agreed so far: US open to ~3h later = 18:30-21:30 Dubai (17:30-20:30 when the US is on summer time).
   Owner is open to later exits (US close = 01:00 Dubai in winter) and to multi-day holds.
-- **$20 per trade** on demo. Bot picks the markets itself (scanner), long-only.
+- **$50 per position** on demo (was $20). Bot picks the markets itself (scanner), long-only.
 - Wants a system that makes money passively. Be candid about the odds; never overstate an edge.
 
 ## Hard constraints
@@ -38,6 +38,9 @@ Automated short-term trading bot for the owner's **Trading 212 Invest** account 
   first day the 15:45 price > SMA5, max 5 days. 2022-26 OOS: +0.40%/trade (5 bps) / +0.30% (10 bps), 70% wins,
   maxDD ~17-19%; random-entry baseline ~0. Entering same day at 15:55 instead of next open kills the edge.
   Bot schedule (Dubai, winter): buy at 18:30, check/sell at 00:45-00:55.
+- Safety rules (Test D, 10 bps): tight stops destroy the edge (2 ATR: +0.05%/trade). Chosen: 12% disaster stop
+  held at the broker (+0.27%/trade, protects if the phone dies) + skip names with earnings in the hold window
+  (~neutral in backtest, cuts event risk). Owner chose **$50 per position**, max 5 positions.
 
 ## Plan
 1. Research (multi-day + hold-to-close) -> pick a strategy.

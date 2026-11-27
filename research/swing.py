@@ -171,6 +171,10 @@ def evaluate(trades: list[dict], period: str) -> dict:
 
 
 # ------------------------------------------------------------------------- strategies
+STOP_PCT = None            # optional disaster stop as a fraction below the signal price (e.g. 0.08)
+SKIP = None                # optional callable(sym, signal_i) -> True to skip a trade (e.g. earnings filter)
+
+
 def _scan(syms, only, signal_fn, rank_fn, max_hold, stop_atr, exit_fn, next_open, min_dollar_vol=2e7):
     trades = []
     for s in syms.values():
@@ -180,7 +184,12 @@ def _scan(syms, only, signal_fn, rank_fn, max_hold, stop_atr, exit_fn, next_open
         with np.errstate(invalid="ignore"):
             sig = signal_fn(s, I) & (I["dollar_vol"] > min_dollar_vol) & np.isfinite(I["sma200"])
         for i in np.flatnonzero(sig):
+            if SKIP is not None and SKIP(s, int(i)):
+                continue
             stop = s.C[i] - stop_atr * I["atr14"][i] if stop_atr else None
+            if STOP_PCT:
+                pstop = s.C[i] * (1 - STOP_PCT)
+                stop = pstop if stop is None else max(stop, pstop)
             t = walk(s, int(i), max_hold, stop, exit_fn, next_open)
             if t:
                 t["rank"] = rank_fn(s, I, int(i))
